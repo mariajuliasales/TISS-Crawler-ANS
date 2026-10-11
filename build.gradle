@@ -1,21 +1,59 @@
 plugins {
-    id 'groovy'
+    id 'groovy'       // compila código Groovy (src/main/groovy e src/test/groovy)
+    id 'application'  // habilita o comando ./gradlew run
 }
 
-group = 'com.mariajuliasales'
-version = '1.0-SNAPSHOT'
+group = 'br.com.zg'
+version = '1.0.0'
+
+// Groovy 3 não suporta compilar/rodar em JDKs muito novos (ex.: 25).
+// O toolchain faz o Gradle usar um JDK 21 só para este projeto,
+// mesmo que o "java" padrão da máquina seja outro.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation 'org.apache.groovy:groovy:5.1.3'
-    testImplementation platform('org.junit:junit-bom:6.0.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Groovy 3 com o group antigo (org.codehaus.groovy): o HttpBuilder-NG 1.0.4 depende dele.
+    // Usar Groovy 4 (org.apache.groovy) aqui geraria classes duplicadas no classpath.
+    implementation 'org.codehaus.groovy:groovy-all:3.0.21'
+
+    // Cliente HTTP 
+    implementation 'io.github.http-builder-ng:http-builder-ng-core:1.0.4'
+
+    // Parser de HTML (seleção de elementos por CSS, como no navegador)
+    implementation 'org.jsoup:jsoup:1.17.2'
+
+    // O HttpBuilder-NG registra logs via SLF4J; sem uma implementação ele imprime um aviso.
+    // O "nop" (no operation) simplesmente descarta esses logs internos.
+    runtimeOnly 'org.slf4j:slf4j-nop:1.7.36'
+
+    // Opcional 1: envio de e-mail com anexos
+    implementation 'org.apache.commons:commons-email:1.6.0'
+
+    // Testes com Spock (roda sobre a JUnit Platform)
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.3'
+}
+
+application {
+    mainClass = 'br.com.zg.crawler.Main'
+}
+
+// Liga o teclado do terminal ao programa, para o menu interativo funcionar com ./gradlew run --args='menu'
+run {
+    standardInput = System.in
 }
 
 test {
     useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
 }

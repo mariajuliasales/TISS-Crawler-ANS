@@ -20,3 +20,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Crawler ###
+Downloads/
+config/interessados.csv
+.env
