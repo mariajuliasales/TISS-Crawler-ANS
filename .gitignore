@@ -22,6 +22,5 @@ out/
 .vscode/
 
 ### Crawler ###
-Downloads/
 config/interessados.csv
 .env
